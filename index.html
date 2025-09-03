@@ -72,7 +72,6 @@
     .theme{ display:flex; gap:8px }
     .swatch{ width:22px; height:22px; border-radius:50%; border:1px solid var(--card-border); cursor:pointer; padding:0; display:inline-flex; align-items:center; justify-content:center }
     .swatch[aria-pressed="true"]{ outline: var(--swatch-selected-outline); }
-    /* мобильные правки */
     @media (max-width:480px){ .card{ padding:20px } .avatar{ width:76px; height:76px } }
   </style>
 </head>
@@ -81,7 +80,6 @@
     <div class="card" id="cardRoot">
       <div class="top">
         <div class="avatar">
-          <!-- Поставь свою аву (квадратную) -->
           <img id="avatar" alt="аватар" src="images/avatar.png" loading="lazy" decoding="async">
         </div>
         <div class="id">
@@ -100,23 +98,16 @@
   <script>
     'use strict';
 
-    // ======= SVG ИКОНКИ (определяем до CONFIG чтобы можно было вызывать при инициализации) =======
-    function svgDiscord(){ return `
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><path d="M20.317 4.37A19.79 19.79 0 0 0 16.558 3c-.206.37-.447.87-.614 1.269a18.27 18.27 0 0 0-3.887 0A11.344 11.344 0 0 0 11.442 3a19.736 19.736 0 0 0-3.76 1.37C4.653 7.19 4.096 9.89 4.275 12.55c1.401 1.044 2.757 1.681 4.14 2.099.333-.457.631-.943.887-1.452-.492-.189-.96-.418-1.4-.683l.349-.27c2.696 1.26 5.612 1.26 8.308 0l.35.27c-.44.266-.909.494-1.401.683.256.51.554.995.888 1.452 1.382-.418 2.739-1.055 4.139-2.1.326-4.61-.554-7.28-2.818-9.18ZM9.2 12.6c-.608 0-1.108-.56-1.108-1.251 0-.69.49-1.251 1.108-1.251s1.118.561 1.108 1.251c0 .691-.49 1.251-1.108 1.251Zm5.6 0c-.607 0-1.108-.56-1.108-1.251 0-.69.49-1.251 1.108-1.251.619 0 1.109.561 1.109 1.251 0 .691-.49 1.251-1.109 1.251Z"/></svg>`}
+    // ======= SVG ИКОНКИ =======
+    const svgDiscord = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.317 4.37A19.79 19.79 0 0 0 16.558 3c-.206.37-.447.87-.614 1.269a18.27 18.27 0 0 0-3.887 0A11.344 11.344 0 0 0 11.442 3a19.736 19.736 0 0 0-3.76 1.37C4.653 7.19 4.096 9.89 4.275 12.55c1.401 1.044 2.757 1.681 4.14 2.099.333-.457.631-.943.887-1.452-.492-.189-.96-.418-1.4-.683l.349-.27c2.696 1.26 5.612 1.26 8.308 0l.35.27c-.44.266-.909.494-1.401.683.256.51.554.995.888 1.452 1.382-.418 2.739-1.055 4.139-2.1.326-4.61-.554-7.28-2.818-9.18ZM9.2 12.6c-.608 0-1.108-.56-1.108-1.251 0-.69.49-1.251 1.108-1.251s1.118.561 1.108 1.251c0 .691-.49 1.251-1.108 1.251Zm5.6 0c-.607 0-1.108-.56-1.108-1.251 0-.69.49-1.251 1.108-1.251.619 0 1.109.561 1.109 1.251 0 .691-.49 1.251-1.109 1.251Z"/></svg>`;
+    const svgGitHub = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.708 2 12.37c0 4.57 2.865 8.438 6.839 9.804.5.098.683-.224.683-.5v-1.96c-2.782.623-3.366-1.37-3.366-1.37-.455-1.196-1.11-1.515-1.11-1.515-.908-.647.07-.634.07-.634 1.003.074 1.53 1.067 1.53 1.067.893 1.574 2.341 1.12 2.91.857.091-.67.35-1.12.636-1.378-2.22-.263-4.555-1.16-4.555-5.161 0-1.14.392-2.07 1.036-2.802-.104-.263-.45-1.324.098-2.758 0 0 .842-.276 2.76 1.07a9.25 9.25 0 0 1 5.024 0c1.918-1.346 2.76-1.07 2.76-1.07.548 1.434.202 2.495.099 2.758.643.732 1.035 1.662 1.035 2.802 0 4.01-2.339 4.894-4.566 5.153.359.326.678.967.678 1.951v2.896c0 .268.18.599.69.497A10.27 10.27 0 0 0 22 12.37C22 6.709 17.523 2 12 2Z" clip-rule="evenodd"/></svg>`;
+    const svgSteam = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12c0 2.81 1.163 5.35 3.04 7.176l3.764-2.545a3.37 3.37 0 0 1 2.82-3.084l2.13-3.128a4.53 4.53 0 1 1 3.643 2.2l-3.097 2.15a3.365 3.365 0 0 1-2.663 3.844l-4.106 1.034A9.947 9.947 0 0 0 12 22c5.514 0 10-4.486 10-10S17.514 2 12 2Zm4.53 7.27a2.73 2.73 0 1 0 0 5.46 2.73 2.73 0 0 0 0-5.46Zm-6.96 6.614a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Z"/></svg>`;
+    const svgTelegram = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9.036 15.803 8.7 19.71c.51 0 .733-.218.998-.48l2.397-2.245 4.968 3.633c.91.503 1.557.238 1.804-.84l3.267-15.315h.001c.291-1.357-.49-1.886-1.38-1.554L2.18 9.77c-1.327.514-1.307 1.25-.226 1.583l4.993 1.558L19.41 6.34c.626-.414 1.194-.185.726.229L9.036 15.803Z"/></svg>`;
+    const svgCube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2 3 7l9 5 9-5-9-5Zm9 7-9 5v9l9-5V9ZM3 9v9l9 5v-9L3 9Z"/></svg>`;
+    const svgYouTube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.5 6.2a2.82 2.82 0 0 0-1.99-2C19.7 3.5 12 3.5 12 3.5s-7.7 0-9.5.7a2.82 2.82 0 0 0-1.99 2A29.07 29.07 0 0 0 0 12a29.07 29.07 0 0 0 .51 5.8 2.82 2.82 0 0 0 1.99 2c1.8.7 9.5.7 9.5.7s7.7 0 9.5-.7a2.82 2.82 0 0 0 1.99-2A29.07 29.07 0 0 0 24 12a29.07 29.07 0 0 0-.5-5.8ZM10 15.5V8.5l6 3.5-6 3.5Z"/></svg>`;
+    const svgTwitch = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 2l-2 6v14h6v4h4l4-4h4l6-6V2H4zm16 10-4 4h-4l-4 4v-4H4V4h16v8zM14 5h2v6h-2V5zm-4 0h2v6H10V5z"/></svg>`;
 
-    function svgGitHub(){ return `
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.708 2 12.37c0 4.57 2.865 8.438 6.839 9.804.5.098.683-.224.683-.5v-1.96c-2.782.623-3.366-1.37-3.366-1.37-.455-1.196-1.11-1.515-1.11-1.515-.908-.647.07-.634.07-.634 1.003.074 1.53 1.067 1.53 1.067.893 1.574 2.341 1.12 2.91.857.091-.67.35-1.12.636-1.378-2.22-.263-4.555-1.16-4.555-5.161 0-1.14.392-2.07 1.036-2.802-.104-.263-.45-1.324.098-2.758 0 0 .842-.276 2.76 1.07a9.25 9.25 0 0 1 5.024 0c1.918-1.346 2.76-1.07 2.76-1.07.548 1.434.202 2.495.099 2.758.643.732 1.035 1.662 1.035 2.802 0 4.01-2.339 4.894-4.566 5.153.359.326.678.967.678 1.951v2.896c0 .268.18.599.69.497A10.27 10.27 0 0 0 22 12.37C22 6.709 17.523 2 12 2Z" clip-rule="evenodd"/></svg>`}
-
-    function svgSteam(){ return `
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.486 2 2 6.486 2 12c0 2.81 1.163 5.35 3.04 7.176l3.764-2.545a3.37 3.37 0 0 1 2.82-3.084l2.13-3.128a4.53 4.53 0 1 1 3.643 2.2l-3.097 2.15a3.365 3.365 0 0 1-2.663 3.844l-4.106 1.034A9.947 9.947 0 0 0 12 22c5.514 0 10-4.486 10-10S17.514 2 12 2Zm4.53 7.27a2.73 2.73 0 1 0 0 5.46 2.73 2.73 0 0 0 0-5.46Zm-6.96 6.614a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Z"/></svg>`}
-
-    function svgTelegram(){ return `
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M9.036 15.803 8.7 19.71c.51 0 .733-.218.998-.48l2.397-2.245 4.968 3.633c.91.503 1.557.238 1.804-.84l3.267-15.315h.001c.291-1.357-.49-1.886-1.38-1.554L2.18 9.77c-1.327.514-1.307 1.25-.226 1.583l4.993 1.558L19.41 6.34c.626-.414 1.194-.185.726.229L9.036 15.803Z"/></svg>`}
-
-    function svgCube(){ return `
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2 3 7l9 5 9-5-9-5Zm9 7-9 5v9l9-5V9ZM3 9v9l9 5v-9L3 9Z"/></svg>`}
-
-    // ======= КОНФИГ =======
+    // ======= CONFIG =======
     const CONFIG = {
       name: "Mandarin",
       avatar: "images/avatar.png", 
@@ -132,37 +123,31 @@
         presets: ["#ff7a00", "#00d1b2", "#6c5ce7", "#00a2ff", "#34d399", "#f43f5e"]
       },
       links: [
-        {
-          label: "Roblox Game: Dungeon & Artifacts",
-          href: "https://www.roblox.com/games/73275351338484/In-development-Artefacts-Hunter",
-          sub: "WIP • модульная генерация данжей",
-          icon: svgCube()
-        },
+        { label: "Roblox Game: Dungeon & Artifacts", href: "https://www.roblox.com/games/73275351338484/In-development-Artefacts-Hunter", sub: "WIP • модульная генерация данжей", icon: svgCube() },
         { label: "GitHub", href: "https://github.com/SaitWors", sub: "код, полезные скрипты", icon: svgGitHub() },
         { label: "Steam", href: "https://steamcommunity.com/id/MandarinCreatorGrup/", sub: "играем в инди и не только", icon: svgSteam() },
         { label: "Discord", href: "https://discord.gg/CAmtazPK", sub: "@mandarin", icon: svgDiscord() },
         { label: "Telegram", href: "https://t.me/MandarinCreatorGroup", sub: "канал/контакт", icon: svgTelegram() },
+        { label: "YouTube", href: "https://www.youtube.com/@OttoKrauts", sub: "канал", icon: svgYouTube() },
+        { label: "Twitch", href: "https://www.twitch.tv/mandarincg", sub: "стримы", icon: svgTwitch() },
       ]
     };
 
     // ======= Утилиты =======
     const el = sel => document.querySelector(sel);
 
-    // Нормализация и защита hex-цвета (поддержка #rgb и #rrggbb)
     function normalizeHex(hex){
       if(typeof hex !== 'string') return null;
       hex = hex.trim().toLowerCase();
       if(!hex.startsWith('#')) hex = '#' + hex;
       if(!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return null;
       if(hex.length === 4){
-        // #rgb -> #rrggbb
-        hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+        hex = '#' + hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
       }
       return hex;
     }
 
     function lighten(hex, amount){
-      // amount: 0..1
       const n = normalizeHex(hex);
       if(!n) return '#000000';
       const c = n.slice(1);
@@ -184,7 +169,6 @@
       if(meta) meta.setAttribute('content', norm);
     }
 
-    // ======= РЕНДЕР =======
     function render(){
       try {
         el('#displayName').textContent = CONFIG.name || 'Mandarin';
@@ -211,7 +195,7 @@
           badges.appendChild(d);
         });
 
-        // ссылки — безопасная сборка DOM (icons исходят из локальных функций)
+        // ссылки
         const links = el('#links');
         links.innerHTML = '';
         (CONFIG.links || []).forEach(item => {
@@ -219,14 +203,11 @@
           a.className = 'btn';
           a.href = item.href || '#';
           a.target = '_blank';
-          // безопасность: noopener + noreferrer
           a.rel = 'noopener noreferrer';
           a.setAttribute('role','listitem');
 
-          // иконка (SVG строка — локально сгенерирована)
           const iconWrap = document.createElement('span');
           iconWrap.className = 'icon';
-          // Мы уверены в source SVG, поэтому вставляем через innerHTML
           if(item.icon && typeof item.icon === 'string'){
             iconWrap.innerHTML = item.icon;
           }
@@ -247,14 +228,14 @@
           links.appendChild(a);
         });
 
-        // тема (swatches)
+        // темы
         const tp = el('#themePicker');
         tp.innerHTML = '';
         const presets = (CONFIG.theme && CONFIG.theme.presets) ? CONFIG.theme.presets.slice() : ['#ff7a00'];
         presets.forEach((c, idx) => {
           const s = document.createElement('button');
           s.className = 'swatch';
-          s.type = 'button'; // безопасно в любой ситуации
+          s.type = 'button';
           const norm = normalizeHex(c) || '#000000';
           s.style.background = norm;
           s.title = norm;
@@ -262,29 +243,21 @@
           s.setAttribute('aria-pressed', 'false');
           s.dataset.color = norm;
           s.addEventListener('click', () => {
-            // снять у всех
             tp.querySelectorAll('.swatch').forEach(sw => sw.setAttribute('aria-pressed','false'));
             s.setAttribute('aria-pressed','true');
             applyTheme(norm);
           });
-          // клавиатурная активация (Enter/Space уже работает на кнопках)
-          if(idx === 0){
-            // отмечаем первый пресет как выбранный по умолчанию
-            s.setAttribute('aria-pressed','true');
-          }
+          if(idx === 0) s.setAttribute('aria-pressed','true');
           tp.appendChild(s);
         });
 
-        // применить тему по умолчанию из конфига
         applyTheme(CONFIG.theme.color, CONFIG.theme.alt);
         el('#year').textContent = new Date().getFullYear();
       } catch (err) {
-        // не ломаем страницу при ошибке рендера — выводим в консоль (для разработчика)
         console.error('Render error:', err);
       }
     }
 
-    // Инициализация
     render();
   </script>
 </body>
