@@ -143,11 +143,167 @@
   <!-- Твой основной скрипт остался (рендер ссылок/тем) -->
   <script>
     'use strict';
-    // (здесь сокращённо — возьми из твоего файла все svg, CONFIG и render()/утилиты без изменений)
-    // Для компактности: используем уже существующий код render() из твоего исходника.
-    // Ниже минимально вызываем render() — вставь свой оригинальный render() и CONFIG сюда.
-    // ---------- START вставь сюда свой полный CONFIG + render() ----------
-    // (Я предполагаю, что у тебя остался предыдущий код render() — если хочешь, могу вставить весь блок обратно)
+    // ======= SVG ИКОНКИ (оставил как у тебя) =======
+    const svgDiscord = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
+    const svgGitHub = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.708 2 12.37c0 4.57 2.865 8.438 6.839 9.804.5.098.683-.224.683-.5v-1.96c-2.782.623-3.366-1.37-3.366-1.37-.455-1.196-1.11-1.515-1.11-1.515-.908-.647.07-.634.07-.634 1.003.074 1.53 1.067 1.53 1.067.893 1.574 2.341 1.12 2.91.857.091-.67.35-1.12.636-1.378-2.22-.263-4.555-1.16-4.555-5.161 0-1.14.392-2.07 1.036-2.802-.104-.263-.45-1.324.098-2.758 0 0 .842-.276 2.76 1.07a9.25 9.25 0 0 1 5.024 0c1.918-1.346 2.76-1.07 2.76-1.07.548 1.434.202 2.495.099 2.758.643.732 1.035 1.662 1.035 2.802 0 4.01-2.339 4.894-4.566 5.153.359.326.678.967.678 1.951v2.896c0 .268.18.599.69.497A10.27 10.27 0 0 0 22 12.37C22 6.709 17.523 2 12 2Z" clip-rule="evenodd"/></svg>`;
+    const svgSteam = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
+    const svgTelegram = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
+    const svgCube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
+    const svgYouTube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
+    const svgTwitch = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
+
+    // ======= CONFIG (твой оригинал) =======
+    const CONFIG = {
+      name: "Mandarin",
+      avatar: "images/avatar.png",
+      bio: "Junior dev • Python/Lua & Java • Люблю Garry's Mod • 20 Лет",
+      badges: [
+        { text: "Тарков", accent: true },
+        { text: "Бог Мандарин" },
+        { text: "RU/Moscow" },
+      ],
+      theme: {
+        color: "#ff7a00",
+        alt: "#ffb46b",
+        presets: ["#ff7a00", "#00d1b2", "#6c5ce7", "#00a2ff", "#34d399", "#f43f5e"]
+      },
+      links: [
+        { label: "Roblox Game: Dungeon & Artifacts", href: "https://www.roblox.com/games/73275351338484/In-development-Artefacts-Hunter", sub: "WIP • модульная генерация данжей", icon: svgCube() },
+        { label: "GitHub", href: "https://github.com/SaitWors", sub: "код, полезные скрипты", icon: svgGitHub() },
+        { label: "Steam", href: "https://steamcommunity.com/id/MandarinCreatorGrup/", sub: "играем в инди и не только", icon: svgSteam() },
+        { label: "Discord", href: "https://discord.gg/CAmtazPK", sub: "@mandarin", icon: svgDiscord() },
+        { label: "Telegram", href: "https://t.me/MandarinCreatorGroup", sub: "канал/контакт", icon: svgTelegram() },
+        { label: "YouTube", href: "https://www.youtube.com/@OttoKrauts", sub: "канал", icon: svgYouTube() },
+        { label: "Twitch", href: "https://www.twitch.tv/mandarincg", sub: "стримы", icon: svgTwitch() },
+      ]
+    };
+
+    // ======= Утилиты (как было) =======
+    const el = sel => document.querySelector(sel);
+
+    function normalizeHex(hex){
+      if(typeof hex !== 'string') return null;
+      hex = hex.trim().toLowerCase();
+      if(!hex.startsWith('#')) hex = '#' + hex;
+      if(!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return null;
+      if(hex.length === 4){
+        hex = '#' + hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
+      }
+      return hex;
+    }
+
+    function lighten(hex, amount){
+      const n = normalizeHex(hex);
+      if(!n) return '#000000';
+      const c = n.slice(1);
+      const num = parseInt(c,16);
+      let r = (num >> 16) & 0xFF, g = (num >> 8) & 0xFF, b = num & 0xFF;
+      r = Math.min(255, Math.round(r + (255 - r) * amount));
+      g = Math.min(255, Math.round(g + (255 - g) * amount));
+      b = Math.min(255, Math.round(b + (255 - b) * amount));
+      const toHex = v => v.toString(16).padStart(2,'0');
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    function applyTheme(color, alt){
+      const norm = normalizeHex(color) || '#ff7a00';
+      const altNorm = normalizeHex(alt) || lighten(norm, 0.35);
+      document.documentElement.style.setProperty('--accent', norm);
+      document.documentElement.style.setProperty('--accent-2', altNorm);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if(meta) meta.setAttribute('content', norm);
+    }
+
+    function render(){
+      try {
+        el('#displayName').textContent = CONFIG.name || 'Mandarin';
+        el('#bio').textContent = CONFIG.bio || '';
+        const avatarEl = el('#avatar');
+        avatarEl.src = CONFIG.avatar || 'images/avatar.png';
+        avatarEl.alt = CONFIG.name ? `${CONFIG.name} — аватар` : 'аватар';
+
+        // бейджи
+        const badges = el('#badges');
+        badges.innerHTML = '';
+        (CONFIG.badges || []).forEach(b => {
+          const d = document.createElement('div');
+          d.className = 'badge';
+          if(b && b.accent){
+            const dot = document.createElement('span');
+            dot.className = 'dot';
+            dot.setAttribute('aria-hidden','true');
+            d.appendChild(dot);
+            d.appendChild(document.createTextNode(b.text || ''));
+          } else {
+            d.textContent = b.text || '';
+          }
+          badges.appendChild(d);
+        });
+
+        // ссылки
+        const links = el('#links');
+        links.innerHTML = '';
+        (CONFIG.links || []).forEach(item => {
+          const a = document.createElement('a');
+          a.className = 'btn';
+          a.href = item.href || '#';
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.setAttribute('role','listitem');
+
+          const iconWrap = document.createElement('span');
+          iconWrap.className = 'icon';
+          if(item.icon && typeof item.icon === 'string'){
+            iconWrap.innerHTML = item.icon;
+          }
+
+          const label = document.createElement('span');
+          label.textContent = item.label || '';
+
+          a.appendChild(iconWrap);
+          a.appendChild(label);
+
+          if(item.sub){
+            const right = document.createElement('span');
+            right.className = 'right';
+            right.textContent = item.sub;
+            a.appendChild(right);
+          }
+
+          links.appendChild(a);
+        });
+
+        // темы
+        const tp = el('#themePicker');
+        tp.innerHTML = '';
+        const presets = (CONFIG.theme && CONFIG.theme.presets) ? CONFIG.theme.presets.slice() : ['#ff7a00'];
+        presets.forEach((c, idx) => {
+          const s = document.createElement('button');
+          s.className = 'swatch';
+          s.type = 'button';
+          const norm = normalizeHex(c) || '#000000';
+          s.style.background = norm;
+          s.title = norm;
+          s.setAttribute('aria-label', `Тема ${norm}`);
+          s.setAttribute('aria-pressed', 'false');
+          s.dataset.color = norm;
+          s.addEventListener('click', () => {
+            tp.querySelectorAll('.swatch').forEach(sw => sw.setAttribute('aria-pressed','false'));
+            s.setAttribute('aria-pressed','true');
+            applyTheme(norm);
+          });
+          if(idx === 0) s.setAttribute('aria-pressed','true');
+          tp.appendChild(s);
+        });
+
+        applyTheme(CONFIG.theme.color, CONFIG.theme.alt);
+        el('#year').textContent = new Date().getFullYear();
+      } catch (err) {
+        console.error('Render error:', err);
+      }
+    }
+
+    render();
   </script>
 
   <!-- ========== Firebase (Email+Password + Anonymous) + Comments ========== -->
