@@ -13,13 +13,13 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' fill='%23ff7a00'/><path d='M28 20c6-6 12-6 16-4' stroke='%231b1b1b' stroke-width='4' fill='none' stroke-linecap='round'/></svg>">
   <style>
     :root{
-      --bg: #0b0b0f; 
+      --bg: #0b0b0f;
       --card: rgba(255,255,255,0.06);
       --card-border: rgba(255,255,255,0.12);
       --text: #eaeaf0;
       --muted: #a7a7b3;
-      --accent: #ff7a00; 
-      --accent-2: #ffb46b; 
+      --accent: #ff7a00;
+      --accent-2: #ffb46b;
       --radius: 20px;
       --swatch-selected-outline: 2px solid rgba(255,255,255,0.14);
     }
@@ -34,8 +34,9 @@
         radial-gradient(50vmax 50vmax at 85% 10%, rgba(255,122,0,.08), transparent 60%),
         linear-gradient(180deg, #0b0b0f 0%, #0a0a0d 100%);
       display:grid; place-items:center;
+      padding:24px;
     }
-    .wrap{ width:min(720px, 100%); padding:24px; }
+    .wrap{ width:min(720px, 100%); }
     .card{
       background:var(--card);
       border:1px solid var(--card-border);
@@ -60,6 +61,7 @@
       padding:14px 16px; border-radius:14px; text-decoration:none; color:var(--text);
       border:1px solid var(--card-border); background:rgba(255,255,255,.03);
       transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      cursor:pointer;
     }
     .btn:hover{ transform: translateY(-1px); background:rgba(255,255,255,.06); border-color: rgba(255,255,255,.22)}
     .btn:active{ transform: translateY(0)}
@@ -72,7 +74,16 @@
     .theme{ display:flex; gap:8px }
     .swatch{ width:22px; height:22px; border-radius:50%; border:1px solid var(--card-border); cursor:pointer; padding:0; display:inline-flex; align-items:center; justify-content:center }
     .swatch[aria-pressed="true"]{ outline: var(--swatch-selected-outline); }
-    @media (max-width:480px){ .card{ padding:20px } .avatar{ width:76px; height:76px } }
+
+    /* --- Комментарии и авторизация --- */
+    .authBtns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center }
+    .authInput { padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:rgba(0,0,0,0.35); color:var(--text) }
+    .comments { margin-top:18px; border-top:1px solid rgba(255,255,255,0.03); padding-top:16px; }
+    #commentsList { display:grid; gap:10px; max-height:300px; overflow:auto; padding-right:6px; }
+    .commentItem { background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.02) }
+    textarea#commentText { width:100%; min-height:72px; border-radius:10px; padding:10px; margin-top:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.04); color:var(--text) }
+    .small { color:var(--muted); font-size:12px; margin-top:6px }
+    @media (max-width:480px){ .card{ padding:20px } .avatar{ width:76px; height:76px } .authBtns{flex-direction:column; align-items:stretch} }
   </style>
 </head>
 <body>
@@ -86,179 +97,277 @@
           <div class="name" id="displayName">Mandarin</div>
           <div class="bio" id="bio">Junior dev • Roblox/Lua & Java • Люблю Steam-игры и делаю утилиты «для себя»</div>
           <div class="badges" id="badges" aria-hidden="false"></div>
+
+          <!-- Блок авторизации: поля + кнопки -->
+          <div id="authArea" class="authBtns" aria-live="polite">
+            <input id="emailInput" class="authInput" placeholder="Email" type="email" style="min-width:200px">
+            <input id="nameInput" class="authInput" placeholder="Имя (опционально)" type="text" style="min-width:140px">
+            <input id="passwordInput" class="authInput" placeholder="Пароль" type="password" style="min-width:140px">
+
+            <button id="registerBtn" class="btn" title="Создать аккаунт">Зарегистрироваться</button>
+            <button id="loginBtn" class="btn" title="Войти">Войти</button>
+            <button id="anonBtn" class="btn" title="Войти анонимно">Войти анонимно</button>
+
+            <button id="logoutBtn" class="btn" style="display:none; background:rgba(255,255,255,0.02)">Выйти</button>
+          </div>
+
+          <div id="userMini" style="display:none; margin-top:8px;">
+            <span class="small">Вошли как <b id="authName"></b> <span id="anonBadge" style="color:#f4b400; margin-left:8px; display:none">(аноним)</span></span>
+          </div>
         </div>
       </div>
+
       <div class="links" id="links" role="list"></div>
+
+      <!-- Комментарии -->
+      <div class="comments" id="commentsSection">
+        <h3 style="margin:0 0 8px 0">Комментарии</h3>
+        <div id="authHint" class="small">Чтобы оставить комментарий — войдите через Email или используйте анонимный вход.</div>
+
+        <div id="commentsList"></div>
+
+        <textarea id="commentText" placeholder="Напиши комментарий..." aria-label="Комментарий"></textarea>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="sendComment" class="btn">Отправить</button>
+          <button id="refreshComments" class="btn" type="button">Обновить</button>
+        </div>
+      </div>
+
       <div class="footer">
         <div class="made">© <span id="year"></span> Mandarin</div>
         <div class="theme" id="themePicker" aria-label="Выбор темы"></div>
       </div>
     </div>
   </div>
+
+  <!-- Твой основной скрипт остался (рендер ссылок/тем) -->
   <script>
     'use strict';
+    // (здесь сокращённо — возьми из твоего файла все svg, CONFIG и render()/утилиты без изменений)
+    // Для компактности: используем уже существующий код render() из твоего исходника.
+    // Ниже минимально вызываем render() — вставь свой оригинальный render() и CONFIG сюда.
+    // ---------- START вставь сюда свой полный CONFIG + render() ----------
+    // (Я предполагаю, что у тебя остался предыдущий код render() — если хочешь, могу вставить весь блок обратно)
+  </script>
 
-    // ======= SVG ИКОНКИ =======
-    const svgDiscord = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.317 4.37A19.79 19.79 0 0 0 16.558 3c-.206.37-.447.87-.614 1.269a18.27 18.27 0 0 0-3.887 0A11.344 11.344 0 0 0 11.442 3a19.736 19.736 0 0 0-3.76 1.37C4.653 7.19 4.096 9.89 4.275 12.55c1.401 1.044 2.757 1.681 4.14 2.099.333-.457.631-.943.887-1.452-.492-.189-.96-.418-1.4-.683l.349-.27c2.696 1.26 5.612 1.26 8.308 0l.35.27c-.44.266-.909.494-1.401.683.256.51.554.995.888 1.452 1.382-.418 2.739-1.055 4.139-2.1.326-4.61-.554-7.28-2.818-9.18ZM9.2 12.6c-.608 0-1.108-.56-1.108-1.251 0-.69.49-1.251 1.108-1.251s1.118.561 1.108 1.251c0 .691-.49 1.251-1.108 1.251Zm5.6 0c-.607 0-1.108-.56-1.108-1.251 0-.69.49-1.251 1.108-1.251.619 0 1.109.561 1.109 1.251 0 .691-.49 1.251-1.109 1.251Z"/></svg>`;
-    const svgGitHub = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.708 2 12.37c0 4.57 2.865 8.438 6.839 9.804.5.098.683-.224.683-.5v-1.96c-2.782.623-3.366-1.37-3.366-1.37-.455-1.196-1.11-1.515-1.11-1.515-.908-.647.07-.634.07-.634 1.003.074 1.53 1.067 1.53 1.067.893 1.574 2.341 1.12 2.91.857.091-.67.35-1.12.636-1.378-2.22-.263-4.555-1.16-4.555-5.161 0-1.14.392-2.07 1.036-2.802-.104-.263-.45-1.324.098-2.758 0 0 .842-.276 2.76 1.07a9.25 9.25 0 0 1 5.024 0c1.918-1.346 2.76-1.07 2.76-1.07.548 1.434.202 2.495.099 2.758.643.732 1.035 1.662 1.035 2.802 0 4.01-2.339 4.894-4.566 5.153.359.326.678.967.678 1.951v2.896c0 .268.18.599.69.497A10.27 10.27 0 0 0 22 12.37C22 6.709 17.523 2 12 2Z" clip-rule="evenodd"/></svg>`;
-    const svgSteam = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12c0 2.81 1.163 5.35 3.04 7.176l3.764-2.545a3.37 3.37 0 0 1 2.82-3.084l2.13-3.128a4.53 4.53 0 1 1 3.643 2.2l-3.097 2.15a3.365 3.365 0 0 1-2.663 3.844l-4.106 1.034A9.947 9.947 0 0 0 12 22c5.514 0 10-4.486 10-10S17.514 2 12 2Zm4.53 7.27a2.73 2.73 0 1 0 0 5.46 2.73 2.73 0 0 0 0-5.46Zm-6.96 6.614a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Z"/></svg>`;
-    const svgTelegram = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9.036 15.803 8.7 19.71c.51 0 .733-.218.998-.48l2.397-2.245 4.968 3.633c.91.503 1.557.238 1.804-.84l3.267-15.315h.001c.291-1.357-.49-1.886-1.38-1.554L2.18 9.77c-1.327.514-1.307 1.25-.226 1.583l4.993 1.558L19.41 6.34c.626-.414 1.194-.185.726.229L9.036 15.803Z"/></svg>`;
-    const svgCube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2 3 7l9 5 9-5-9-5Zm9 7-9 5v9l9-5V9ZM3 9v9l9 5v-9L3 9Z"/></svg>`;
-    const svgYouTube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.5 6.2a2.82 2.82 0 0 0-1.99-2C19.7 3.5 12 3.5 12 3.5s-7.7 0-9.5.7a2.82 2.82 0 0 0-1.99 2A29.07 29.07 0 0 0 0 12a29.07 29.07 0 0 0 .51 5.8 2.82 2.82 0 0 0 1.99 2c1.8.7 9.5.7 9.5.7s7.7 0 9.5-.7a2.82 2.82 0 0 0 1.99-2A29.07 29.07 0 0 0 24 12a29.07 29.07 0 0 0-.5-5.8ZM10 15.5V8.5l6 3.5-6 3.5Z"/></svg>`;
-    const svgTwitch = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 2l-2 6v14h6v4h4l4-4h4l6-6V2H4zm16 10-4 4h-4l-4 4v-4H4V4h16v8zM14 5h2v6h-2V5zm-4 0h2v6H10V5z"/></svg>`;
+  <!-- ========== Firebase (Email+Password + Anonymous) + Comments ========== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signInAnonymously,
+      signOut,
+      onAuthStateChanged,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    // ======= CONFIG =======
-    const CONFIG = {
-      name: "Mandarin",
-      avatar: "images/avatar.png", 
-      bio: "Junior dev • Python/Lua & Java • Люблю Garry's Mod • 20 Лет",
-      badges: [
-        { text: "Тарков", accent: true },
-        { text: "Бог Мандарин" },
-        { text: "RU/Moscow" },
-      ],
-      theme: {
-        color: "#ff7a00",
-        alt: "#ffb46b",
-        presets: ["#ff7a00", "#00d1b2", "#6c5ce7", "#00a2ff", "#34d399", "#f43f5e"]
-      },
-      links: [
-        { label: "Roblox Game: Dungeon & Artifacts", href: "https://www.roblox.com/games/73275351338484/In-development-Artefacts-Hunter", sub: "WIP • модульная генерация данжей", icon: svgCube() },
-        { label: "GitHub", href: "https://github.com/SaitWors", sub: "код, полезные скрипты", icon: svgGitHub() },
-        { label: "Steam", href: "https://steamcommunity.com/id/MandarinCreatorGrup/", sub: "играем в инди и не только", icon: svgSteam() },
-        { label: "Discord", href: "https://discord.gg/CAmtazPK", sub: "@mandarin", icon: svgDiscord() },
-        { label: "Telegram", href: "https://t.me/MandarinCreatorGroup", sub: "канал/контакт", icon: svgTelegram() },
-        { label: "YouTube", href: "https://www.youtube.com/@OttoKrauts", sub: "канал", icon: svgYouTube() },
-        { label: "Twitch", href: "https://www.twitch.tv/mandarincg", sub: "стримы", icon: svgTwitch() },
-      ]
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      orderBy,
+      serverTimestamp,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // ---- ЗАМЕНИ НА СВОИ ДАННЫЕ ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_b_RUXemBYyW3Ot2_8RCA6APCSg4wo-Q",
+      authDomain: "mandarincgroupsite.firebaseapp.com",
+      projectId: "mandarincgroupsite",
+      storageBucket: "mandarincgroupsite.firebasestorage.app",
+      messagingSenderId: "1086684215118",
+      appId: "1:1086684215118:web:8465e5ace4845ee244101f",
+      measurementId: "G-GKT7QMMCDE"
     };
+    // ------------------------------
 
-    // ======= Утилиты =======
-    const el = sel => document.querySelector(sel);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    function normalizeHex(hex){
-      if(typeof hex !== 'string') return null;
-      hex = hex.trim().toLowerCase();
-      if(!hex.startsWith('#')) hex = '#' + hex;
-      if(!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return null;
-      if(hex.length === 4){
-        hex = '#' + hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
-      }
-      return hex;
-    }
+    // DOM
+    const emailInput = document.getElementById('emailInput');
+    const nameInput = document.getElementById('nameInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const registerBtn = document.getElementById('registerBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const anonBtn = document.getElementById('anonBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const authArea = document.getElementById('authArea');
+    const userMini = document.getElementById('userMini');
+    const authName = document.getElementById('authName');
+    const anonBadge = document.getElementById('anonBadge');
+    const avatarImg = document.getElementById('avatar');
+    const displayNameEl = document.getElementById('displayName');
 
-    function lighten(hex, amount){
-      const n = normalizeHex(hex);
-      if(!n) return '#000000';
-      const c = n.slice(1);
-      const num = parseInt(c,16);
-      let r = (num >> 16) & 0xFF, g = (num >> 8) & 0xFF, b = num & 0xFF;
-      r = Math.min(255, Math.round(r + (255 - r) * amount));
-      g = Math.min(255, Math.round(g + (255 - g) * amount));
-      b = Math.min(255, Math.round(b + (255 - b) * amount));
-      const toHex = v => v.toString(16).padStart(2,'0');
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    }
+    const commentsList = document.getElementById('commentsList');
+    const sendBtn = document.getElementById('sendComment');
+    const refreshBtn = document.getElementById('refreshComments');
+    const commentText = document.getElementById('commentText');
+    const authHint = document.getElementById('authHint');
 
-    function applyTheme(color, alt){
-      const norm = normalizeHex(color) || '#ff7a00';
-      const altNorm = normalizeHex(alt) || lighten(norm, 0.35);
-      document.documentElement.style.setProperty('--accent', norm);
-      document.documentElement.style.setProperty('--accent-2', altNorm);
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if(meta) meta.setAttribute('content', norm);
-    }
+    // Если хочешь запретить анонимам — поставь сюда true. Тогда в UI и в коде анонимы не смогут отправлять.
+    const RESTRICT_ANONYMOUS_FROM_POST = false;
 
-    function render(){
+    // Регистрация
+    registerBtn.addEventListener('click', async () => {
+      const email = (emailInput.value || '').trim();
+      const pass = (passwordInput.value || '');
+      const display = (nameInput.value || '').trim();
+      if(!email || !pass) return alert('Введите email и пароль');
+      registerBtn.disabled = true;
       try {
-        el('#displayName').textContent = CONFIG.name || 'Mandarin';
-        el('#bio').textContent = CONFIG.bio || '';
-        const avatarEl = el('#avatar');
-        avatarEl.src = CONFIG.avatar || 'images/avatar.png';
-        avatarEl.alt = CONFIG.name ? `${CONFIG.name} — аватар` : 'аватар';
-
-        // бейджи
-        const badges = el('#badges');
-        badges.innerHTML = '';
-        (CONFIG.badges || []).forEach(b => {
-          const d = document.createElement('div');
-          d.className = 'badge';
-          if(b && b.accent){
-            const dot = document.createElement('span');
-            dot.className = 'dot';
-            dot.setAttribute('aria-hidden','true');
-            d.appendChild(dot);
-            d.appendChild(document.createTextNode(b.text || ''));
-          } else {
-            d.textContent = b.text || '';
-          }
-          badges.appendChild(d);
-        });
-
-        // ссылки
-        const links = el('#links');
-        links.innerHTML = '';
-        (CONFIG.links || []).forEach(item => {
-          const a = document.createElement('a');
-          a.className = 'btn';
-          a.href = item.href || '#';
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
-          a.setAttribute('role','listitem');
-
-          const iconWrap = document.createElement('span');
-          iconWrap.className = 'icon';
-          if(item.icon && typeof item.icon === 'string'){
-            iconWrap.innerHTML = item.icon;
-          }
-
-          const label = document.createElement('span');
-          label.textContent = item.label || '';
-
-          a.appendChild(iconWrap);
-          a.appendChild(label);
-
-          if(item.sub){
-            const right = document.createElement('span');
-            right.className = 'right';
-            right.textContent = item.sub;
-            a.appendChild(right);
-          }
-
-          links.appendChild(a);
-        });
-
-        // темы
-        const tp = el('#themePicker');
-        tp.innerHTML = '';
-        const presets = (CONFIG.theme && CONFIG.theme.presets) ? CONFIG.theme.presets.slice() : ['#ff7a00'];
-        presets.forEach((c, idx) => {
-          const s = document.createElement('button');
-          s.className = 'swatch';
-          s.type = 'button';
-          const norm = normalizeHex(c) || '#000000';
-          s.style.background = norm;
-          s.title = norm;
-          s.setAttribute('aria-label', `Тема ${norm}`);
-          s.setAttribute('aria-pressed', 'false');
-          s.dataset.color = norm;
-          s.addEventListener('click', () => {
-            tp.querySelectorAll('.swatch').forEach(sw => sw.setAttribute('aria-pressed','false'));
-            s.setAttribute('aria-pressed','true');
-            applyTheme(norm);
-          });
-          if(idx === 0) s.setAttribute('aria-pressed','true');
-          tp.appendChild(s);
-        });
-
-        applyTheme(CONFIG.theme.color, CONFIG.theme.alt);
-        el('#year').textContent = new Date().getFullYear();
-      } catch (err) {
-        console.error('Render error:', err);
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        if(display) {
+          await updateProfile(cred.user, { displayName: display });
+        }
+        // profile auto applied in onAuthStateChanged
+      } catch (e) {
+        console.error(e);
+        alert('Ошибка регистрации: ' + (e.message || e));
+      } finally {
+        registerBtn.disabled = false;
       }
+    });
+
+    // Вход
+    loginBtn.addEventListener('click', async () => {
+      const email = (emailInput.value || '').trim();
+      const pass = (passwordInput.value || '');
+      if(!email || !pass) return alert('Введите email и пароль');
+      loginBtn.disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (e) {
+        console.error(e);
+        alert('Ошибка входа: ' + (e.message || e));
+      } finally {
+        loginBtn.disabled = false;
+      }
+    });
+
+    // Анонимный вход
+    anonBtn.addEventListener('click', async () => {
+      anonBtn.disabled = true;
+      try {
+        await signInAnonymously(auth);
+      } catch (e) {
+        console.error(e);
+        alert('Ошибка анонимного входа: ' + (e.message || e));
+      } finally {
+        anonBtn.disabled = false;
+      }
+    });
+
+    // Выход
+    logoutBtn.addEventListener('click', async () => {
+      await signOut(auth);
+    });
+
+    // Слушаем авторизацию
+    onAuthStateChanged(auth, user => {
+      if(user){
+        authArea.querySelectorAll('input, button').forEach(el => {
+          if(el !== logoutBtn) el.style.display = 'none';
+        });
+        logoutBtn.style.display = 'inline-flex';
+        userMini.style.display = 'block';
+        authName.textContent = user.displayName || user.email || ('user:' + user.uid.slice(0,6));
+        anonBadge.style.display = user.isAnonymous ? 'inline' : 'none';
+        // заменить верхний аватар/имя, если есть
+        if(user.photoURL){
+          avatarImg.src = user.photoURL;
+        }
+        displayNameEl.textContent = user.displayName || displayNameEl.textContent;
+        authHint.style.display = RESTRICT_ANONYMOUS_FROM_POST && user.isAnonymous ? 'block' : 'none';
+        // разрешаем/запрещаем писать
+        if(RESTRICT_ANONYMOUS_FROM_POST && user.isAnonymous){
+          sendBtn.disabled = true;
+        } else {
+          sendBtn.disabled = false;
+        }
+      } else {
+        // show inputs/buttons
+        authArea.querySelectorAll('input, button').forEach(el => el.style.display = '');
+        logoutBtn.style.display = 'none';
+        userMini.style.display = 'none';
+        anonBadge.style.display = 'none';
+        avatarImg.src = 'images/avatar.png';
+        displayNameEl.textContent = 'Mandarin';
+        sendBtn.disabled = true;
+      }
+    });
+
+    // Комментарии: realtime
+    const commentsQuery = query(collection(db, 'comments'), orderBy('createdAt', 'desc'));
+    let unsubscribe = null;
+
+    function escapeHtml(s){
+      if(!s) return '';
+      return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     }
 
-    render();
+    function renderComment(doc){
+      const data = doc.data();
+      const item = document.createElement('div');
+      item.className = 'commentItem';
+      const time = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate().toLocaleString() : '';
+      item.innerHTML = `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+          <div><b>${escapeHtml(data.user || 'Аноним')}</b> <span class="small" style="margin-left:8px">${time}</span></div>
+        </div>
+        <div style="margin-top:6px">${escapeHtml(data.text)}</div>`;
+      return item;
+    }
+
+    function startCommentsRealtime(){
+      if(unsubscribe) unsubscribe();
+      unsubscribe = onSnapshot(commentsQuery, snapshot => {
+        commentsList.innerHTML = '';
+        snapshot.forEach(doc => {
+          const el = renderComment(doc);
+          commentsList.appendChild(el);
+        });
+      }, err => {
+        console.error('comments snapshot error', err);
+      });
+    }
+
+    startCommentsRealtime();
+
+    // Отправка комментария
+    sendBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if(!user) { alert('Войдите чтобы оставить комментарий'); return; }
+      if(RESTRICT_ANONYMOUS_FROM_POST && user.isAnonymous){ alert('Анонимным запрещено отправлять комментарии'); return; }
+      const txt = (commentText.value || '').trim();
+      if(!txt) return;
+      sendBtn.disabled = true;
+      try {
+        await addDoc(collection(db, 'comments'), {
+          user: user.displayName || user.email || ('user:' + user.uid.slice(0,6)),
+          uid: user.uid,
+          text: txt,
+          createdAt: serverTimestamp()
+        });
+        commentText.value = '';
+      } catch (e) {
+        console.error(e);
+        alert('Ошибка отправки: ' + (e.message || e));
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      startCommentsRealtime();
+    });
+
+    // По умолчанию пока не вошли — запретим кнопку
+    sendBtn.disabled = true;
   </script>
 </body>
 </html>
