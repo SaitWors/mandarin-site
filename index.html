@@ -98,7 +98,6 @@
           <div class="bio" id="bio">Junior dev • Roblox/Lua & Java • Люблю Steam-игры и делаю утилиты «для себя»</div>
           <div class="badges" id="badges" aria-hidden="false"></div>
 
-          <!-- Блок авторизации: поля + кнопки -->
           <div id="authArea" class="authBtns" aria-live="polite">
             <input id="emailInput" class="authInput" placeholder="Email" type="email" style="min-width:200px">
             <input id="nameInput" class="authInput" placeholder="Имя (опционально)" type="text" style="min-width:140px">
@@ -119,7 +118,6 @@
 
       <div class="links" id="links" role="list"></div>
 
-      <!-- Комментарии -->
       <div class="comments" id="commentsSection">
         <h3 style="margin:0 0 8px 0">Комментарии</h3>
         <div id="authHint" class="small">Чтобы оставить комментарий — войдите через Email или используйте анонимный вход.</div>
@@ -140,10 +138,8 @@
     </div>
   </div>
 
-  <!-- Твой основной скрипт остался (рендер ссылок/тем) -->
   <script>
     'use strict';
-    // ======= SVG ИКОНКИ (оставил как у тебя) =======
     const svgDiscord = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
     const svgGitHub = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.708 2 12.37c0 4.57 2.865 8.438 6.839 9.804.5.098.683-.224.683-.5v-1.96c-2.782.623-3.366-1.37-3.366-1.37-.455-1.196-1.11-1.515-1.11-1.515-.908-.647.07-.634.07-.634 1.003.074 1.53 1.067 1.53 1.067.893 1.574 2.341 1.12 2.91.857.091-.67.35-1.12.636-1.378-2.22-.263-4.555-1.16-4.555-5.161 0-1.14.392-2.07 1.036-2.802-.104-.263-.45-1.324.098-2.758 0 0 .842-.276 2.76 1.07a9.25 9.25 0 0 1 5.024 0c1.918-1.346 2.76-1.07 2.76-1.07.548 1.434.202 2.495.099 2.758.643.732 1.035 1.662 1.035 2.802 0 4.01-2.339 4.894-4.566 5.153.359.326.678.967.678 1.951v2.896c0 .268.18.599.69.497A10.27 10.27 0 0 0 22 12.37C22 6.709 17.523 2 12 2Z" clip-rule="evenodd"/></svg>`;
     const svgSteam = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
@@ -152,7 +148,6 @@
     const svgYouTube = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
     const svgTwitch = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">...</svg>`;
 
-    // ======= CONFIG (твой оригинал) =======
     const CONFIG = {
       name: "Mandarin",
       avatar: "images/avatar.png",
@@ -178,7 +173,6 @@
       ]
     };
 
-    // ======= Утилиты (как было) =======
     const el = sel => document.querySelector(sel);
 
     function normalizeHex(hex){
@@ -222,7 +216,6 @@
         avatarEl.src = CONFIG.avatar || 'images/avatar.png';
         avatarEl.alt = CONFIG.name ? `${CONFIG.name} — аватар` : 'аватар';
 
-        // бейджи
         const badges = el('#badges');
         badges.innerHTML = '';
         (CONFIG.badges || []).forEach(b => {
@@ -240,7 +233,6 @@
           badges.appendChild(d);
         });
 
-        // ссылки
         const links = el('#links');
         links.innerHTML = '';
         (CONFIG.links || []).forEach(item => {
@@ -273,7 +265,6 @@
           links.appendChild(a);
         });
 
-        // темы
         const tp = el('#themePicker');
         tp.innerHTML = '';
         const presets = (CONFIG.theme && CONFIG.theme.presets) ? CONFIG.theme.presets.slice() : ['#ff7a00'];
@@ -329,7 +320,6 @@
       onSnapshot
     } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // ---- ЗАМЕНИ НА СВОИ ДАННЫЕ ----
     const firebaseConfig = {
       apiKey: "AIzaSyD_b_RUXemBYyW3Ot2_8RCA6APCSg4wo-Q",
       authDomain: "mandarincgroupsite.firebaseapp.com",
@@ -339,13 +329,11 @@
       appId: "1:1086684215118:web:8465e5ace4845ee244101f",
       measurementId: "G-GKT7QMMCDE"
     };
-    // ------------------------------
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // DOM
     const emailInput = document.getElementById('emailInput');
     const nameInput = document.getElementById('nameInput');
     const passwordInput = document.getElementById('passwordInput');
@@ -366,10 +354,8 @@
     const commentText = document.getElementById('commentText');
     const authHint = document.getElementById('authHint');
 
-    // Если хочешь запретить анонимам — поставь сюда true. Тогда в UI и в коде анонимы не смогут отправлять.
     const RESTRICT_ANONYMOUS_FROM_POST = false;
 
-    // Регистрация
     registerBtn.addEventListener('click', async () => {
       const email = (emailInput.value || '').trim();
       const pass = (passwordInput.value || '');
@@ -381,7 +367,6 @@
         if(display) {
           await updateProfile(cred.user, { displayName: display });
         }
-        // profile auto applied in onAuthStateChanged
       } catch (e) {
         console.error(e);
         alert('Ошибка регистрации: ' + (e.message || e));
@@ -390,7 +375,6 @@
       }
     });
 
-    // Вход
     loginBtn.addEventListener('click', async () => {
       const email = (emailInput.value || '').trim();
       const pass = (passwordInput.value || '');
@@ -406,7 +390,6 @@
       }
     });
 
-    // Анонимный вход
     anonBtn.addEventListener('click', async () => {
       anonBtn.disabled = true;
       try {
@@ -419,12 +402,10 @@
       }
     });
 
-    // Выход
     logoutBtn.addEventListener('click', async () => {
       await signOut(auth);
     });
 
-    // Слушаем авторизацию
     onAuthStateChanged(auth, user => {
       if(user){
         authArea.querySelectorAll('input, button').forEach(el => {
@@ -434,20 +415,17 @@
         userMini.style.display = 'block';
         authName.textContent = user.displayName || user.email || ('user:' + user.uid.slice(0,6));
         anonBadge.style.display = user.isAnonymous ? 'inline' : 'none';
-        // заменить верхний аватар/имя, если есть
         if(user.photoURL){
           avatarImg.src = user.photoURL;
         }
         displayNameEl.textContent = user.displayName || displayNameEl.textContent;
         authHint.style.display = RESTRICT_ANONYMOUS_FROM_POST && user.isAnonymous ? 'block' : 'none';
-        // разрешаем/запрещаем писать
         if(RESTRICT_ANONYMOUS_FROM_POST && user.isAnonymous){
           sendBtn.disabled = true;
         } else {
           sendBtn.disabled = false;
         }
       } else {
-        // show inputs/buttons
         authArea.querySelectorAll('input, button').forEach(el => el.style.display = '');
         logoutBtn.style.display = 'none';
         userMini.style.display = 'none';
@@ -458,7 +436,6 @@
       }
     });
 
-    // Комментарии: realtime
     const commentsQuery = query(collection(db, 'comments'), orderBy('createdAt', 'desc'));
     let unsubscribe = null;
 
@@ -494,7 +471,6 @@
 
     startCommentsRealtime();
 
-    // Отправка комментария
     sendBtn.addEventListener('click', async () => {
       const user = auth.currentUser;
       if(!user) { alert('Войдите чтобы оставить комментарий'); return; }
@@ -522,7 +498,6 @@
       startCommentsRealtime();
     });
 
-    // По умолчанию пока не вошли — запретим кнопку
     sendBtn.disabled = true;
   </script>
 </body>
